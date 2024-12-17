@@ -135,6 +135,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hotkey Handler
     async function handleKeyPress(e) {
         const key = e.key;
+        
+        // Handle arrow keys for navigation
+        if (key === 'ArrowLeft') {
+            showPreviousImage();
+            return;
+        } else if (key === 'ArrowRight') {
+            showNextImage();
+            return;
+        }
+        
+        // Handle number keys for moving files
         if (/^[1-9]$/.test(key) && currentImages.length > 0) {
             try {
                 const response = await fetch(
