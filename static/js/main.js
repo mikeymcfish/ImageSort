@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Populate folder list
+    const folderList = document.getElementById('folderList');
+    for (let i = 1; i <= 9; i++) {
+        const folderCol = document.createElement('div');
+        folderCol.className = 'col-md-4';
+        folderCol.innerHTML = `
+            <div class="folder-item">
+                <span class="key">${i}</span>
+                <span class="folder-name">Folder ${i}</span>
+            </div>
+        `;
+        folderList.appendChild(folderCol);
+    }
     let currentImages = [];
     let currentIndex = 0;
     
