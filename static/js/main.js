@@ -234,7 +234,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (xhr.status === 200) {
                             const data = JSON.parse(xhr.responseText);
                             if (data.success) {
-                                showToast('File uploaded successfully!', 'success');
+                                if (data.isZip) {
+                                    const count = data.extractedFiles.length;
+                                    showToast(`Extracted ${count} images from zip file`, 'success');
+                                } else {
+                                    showToast('File uploaded successfully!', 'success');
+                                }
                                 await loadImages();
                                 resolve();
                             } else {

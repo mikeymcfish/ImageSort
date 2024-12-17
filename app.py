@@ -12,7 +12,7 @@ app.secret_key = 'your-secret-key-here'
 
 # Configure upload folder
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'zip'}
 
 # Ensure upload folders exist
 def ensure_folders_exist():
@@ -47,8 +47,51 @@ def upload_file():
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, 'unsorted', filename))
-        return jsonify({'success': True, 'filename': filename})
+        
+        # Handle zip files
+        if filename.lower().endswith('.zip'):
+            try:
+                import zipfile
+                import tempfile
+                
+                # Save zip file to temporary location
+                temp_dir = tempfile.mkdtemp()
+                zip_path = os.path.join(temp_dir, filename)
+                file.save(zip_path)
+                
+                # Extract images from zip
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    extracted_files = []
+                    for zip_info in zip_ref.infolist():
+                        if not zip_info.filename.startswith('__MACOSX') and not zip_info.filename.startswith('.'):
+                            # Get the filename without directory structure
+                            extracted_filename = os.path.basename(zip_info.filename)
+                            if extracted_filename and allowed_file(extracted_filename) and not extracted_filename.lower().endswith('.zip'):
+                                extracted_filename = secure_filename(extracted_filename)
+                                # Extract to unsorted folder
+                                source = zip_ref.extract(zip_info, temp_dir)
+                                destination = os.path.join(UPLOAD_FOLDER, 'unsorted', extracted_filename)
+                                # Move file if it doesn't already exist
+                                if not os.path.exists(destination):
+                                    shutil.move(source, destination)
+                                    extracted_files.append(extracted_filename)
+                
+                # Clean up
+                shutil.rmtree(temp_dir)
+                return jsonify({
+                    'success': True,
+                    'isZip': True,
+                    'extractedFiles': extracted_files
+                })
+                
+            except Exception as e:
+                logging.error(f"Error processing zip file: {str(e)}")
+                return jsonify({'error': 'Failed to process zip file'}), 500
+        
+        # Handle regular image files
+        else:
+            file.save(os.path.join(UPLOAD_FOLDER, 'unsorted', filename))
+            return jsonify({'success': True, 'filename': filename})
     
     return jsonify({'error': 'Invalid file type'}), 400
 
