@@ -196,14 +196,14 @@ document.addEventListener('DOMContentLoaded', function() {
         dropZone.classList.remove('drag-over');
         
         const files = Array.from(e.dataTransfer.files).filter(file => 
-            file.type.startsWith('image/'));
+            file.type.startsWith('image/') || file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip'));
         
         uploadFiles(files);
     }
 
     function handleFileSelect(e) {
         const files = Array.from(e.target.files).filter(file => 
-            file.type.startsWith('image/'));
+            file.type.startsWith('image/') || file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip'));
         uploadFiles(files);
     }
 
