@@ -64,29 +64,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // File Upload
     async function uploadFiles(files) {
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = uploadProgress.querySelector('.progress-bar');
+        const progressText = uploadProgress.querySelector('.progress-percentage');
+        
         for (const file of files) {
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
+                uploadProgress.classList.remove('d-none');
                 
-                if (data.success) {
-                    showToast('File uploaded successfully!', 'success');
-                    await loadImages();
-                } else {
-                    showToast(data.error, 'error');
-                }
+                const xhr = new XMLHttpRequest();
+                await new Promise((resolve, reject) => {
+                    xhr.upload.addEventListener('progress', (e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = Math.round((e.loaded / e.total) * 100);
+                            progressBar.style.width = percentComplete + '%';
+                            progressText.textContent = percentComplete + '%';
+                        }
+                    });
+
+                    xhr.addEventListener('load', async () => {
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.success) {
+                                showToast('File uploaded successfully!', 'success');
+                                await loadImages();
+                                resolve();
+                            } else {
+                                showToast(data.error, 'error');
+                                reject(new Error(data.error));
+                            }
+                        } else {
+                            showToast('Upload failed', 'error');
+                            reject(new Error('Upload failed'));
+                        }
+                    });
+
+                    xhr.addEventListener('error', () => {
+                        showToast('Upload failed', 'error');
+                        reject(new Error('Upload failed'));
+                    });
+
+                    xhr.open('POST', '/upload');
+                    xhr.send(formData);
+                });
             } catch (error) {
-                showToast('Upload failed', 'error');
                 console.error('Upload error:', error);
             }
         }
+        
+        // Hide progress bar after all uploads
+        uploadProgress.classList.add('d-none');
+        progressBar.style.width = '0%';
+        progressText.textContent = '0%';
     }
 
     // Image Navigation

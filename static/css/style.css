@@ -79,6 +79,29 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+.upload-progress {
+    margin-top: 1rem;
+    padding: 0 1rem;
+}
+
+.upload-progress .progress {
+    height: 0.5rem;
+    background-color: var(--border-color);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.upload-progress .progress-bar {
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.upload-progress .progress-text {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    text-align: center;
+    margin: 0;
+}
 
 .controls {
     margin: 1rem 0;

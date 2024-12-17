@@ -23,6 +23,12 @@
                         <p>Drag & drop images here or click to upload</p>
                         <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
                     </div>
+                    <div id="uploadProgress" class="upload-progress d-none">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p class="progress-text mt-2">Uploading: <span class="progress-percentage">0%</span></p>
+                    </div>
                 </div>
 
                 <div id="imageContainer" class="image-container mb-4">
