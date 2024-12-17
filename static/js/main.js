@@ -61,10 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="image-count">0 images</span>
                 </div>
                 <div class="folder-actions">
-                    <button onclick="downloadFolder(${i})" class="btn btn-sm btn-primary">
+                    <button class="btn btn-sm btn-primary download-btn" data-folder="${i}">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button onclick="emptyFolder(${i})" class="btn btn-sm btn-danger">
+                    <button class="btn btn-sm btn-danger empty-btn" data-folder="${i}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -73,9 +73,39 @@ document.addEventListener('DOMContentLoaded', function() {
         folderList.appendChild(folderCol);
     }
     
+    // Make functions globally accessible
+    window.downloadFolder = downloadFolder;
+    window.emptyFolder = emptyFolder;
+
+    // Add click handlers for folder buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.download-btn')) {
+            const folder = e.target.closest('.download-btn').dataset.folder;
+            downloadFolder(folder);
+        } else if (e.target.closest('.empty-btn')) {
+            const folder = e.target.closest('.empty-btn').dataset.folder;
+            emptyFolder(folder);
+        }
+    });
+
     // Update stats periodically
+    async function updateUnsortedCount() {
+        try {
+            const response = await fetch('/images/unsorted');
+            const data = await response.json();
+            document.getElementById('unsortedCount').textContent = data.images.length;
+        } catch (error) {
+            console.error('Error updating unsorted count:', error);
+        }
+    }
+
     updateFolderStats();
-    setInterval(updateFolderStats, 5000);
+    updateUnsortedCount();
+    setInterval(() => {
+        updateFolderStats();
+        updateUnsortedCount();
+    }, 5000);
+    
     let currentImages = [];
     let currentIndex = 0;
     
