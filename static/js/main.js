@@ -102,6 +102,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Preload next image
+    function preloadImage(index) {
+        if (index >= 0 && index < currentImages.length) {
+            const img = new Image();
+            img.src = `/uploads/unsorted/${currentImages[index]}`;
+        }
+    }
+
     function updateImageDisplay() {
         if (currentImages.length === 0) {
             currentImage.classList.add('d-none');
@@ -109,9 +117,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        currentImage.classList.add('loading');
         currentImage.classList.remove('d-none');
         noImageMessage.classList.add('d-none');
-        currentImage.src = `/uploads/unsorted/${currentImages[currentIndex]}`;
+
+        // Create a temporary image for loading
+        const tempImage = new Image();
+        tempImage.onload = () => {
+            currentImage.src = tempImage.src;
+            currentImage.classList.remove('loading');
+            
+            // Preload next and previous images
+            preloadImage(currentIndex + 1);
+            preloadImage(currentIndex - 1);
+        };
+        tempImage.src = `/uploads/unsorted/${currentImages[currentIndex]}`;
         
         // Update navigation buttons
         prevButton.disabled = currentIndex === 0;
