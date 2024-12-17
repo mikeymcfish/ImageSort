@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Sorter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center my-4">
+            <h1>Image Sorter</h1>
+            <p class="text-muted">Use number keys (1-9) to sort images into folders</p>
+        </header>
+
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div id="dropZone" class="drop-zone mb-4">
+                    <div class="drop-zone-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop images here or click to upload</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
+                    </div>
+                </div>
+
+                <div id="imageContainer" class="image-container mb-4">
+                    <img id="currentImage" class="img-fluid d-none" alt="Current image">
+                    <div id="noImageMessage" class="text-center text-muted">
+                        <p>No images to sort</p>
+                    </div>
+                </div>
+
+                <div class="controls text-center mb-4">
+                    <button id="prevButton" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button id="nextButton" class="btn btn-secondary">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="folders-guide">
+                    <h5 class="text-center mb-3">Folder Shortcuts</h5>
+                    <div class="row">
+                        <div class="col-md-4" v-for="i in 9">
+                            <div class="folder-item">
+                                <span class="key">{{ i }}</span>
+                                <span class="folder-name">Folder {{ i }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
