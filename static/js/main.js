@@ -1,17 +1,81 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Populate folder list
     const folderList = document.getElementById('folderList');
+    
+    async function updateFolderStats() {
+        try {
+            const response = await fetch('/folder-stats');
+            const stats = await response.json();
+            
+            for (let i = 1; i <= 9; i++) {
+                const folderElement = document.getElementById(`folder-${i}`);
+                if (folderElement) {
+                    const countElement = folderElement.querySelector('.image-count');
+                    countElement.textContent = `${stats[i] || 0} images`;
+                }
+            }
+        } catch (error) {
+            console.error('Error updating folder stats:', error);
+        }
+    }
+    
+    async function downloadFolder(folder) {
+        try {
+            window.location.href = `/download-folder/${folder}`;
+            showToast('Download started', 'success');
+        } catch (error) {
+            console.error('Error downloading folder:', error);
+            showToast('Download failed', 'error');
+        }
+    }
+    
+    async function emptyFolder(folder) {
+        if (!confirm(`Are you sure you want to move all images from Folder ${folder} to the archive?`)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/empty-folder/${folder}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`Folder ${folder} emptied successfully`, 'success');
+                updateFolderStats();
+            } else {
+                showToast(data.error || 'Failed to empty folder', 'error');
+            }
+        } catch (error) {
+            console.error('Error emptying folder:', error);
+            showToast('Failed to empty folder', 'error');
+        }
+    }
+    
     for (let i = 1; i <= 9; i++) {
         const folderCol = document.createElement('div');
-        folderCol.className = 'col-md-4';
+        folderCol.className = 'col-md-4 mb-3';
         folderCol.innerHTML = `
-            <div class="folder-item">
+            <div class="folder-item" id="folder-${i}">
                 <span class="key">${i}</span>
-                <span class="folder-name">Folder ${i}</span>
+                <div class="folder-info">
+                    <span class="folder-name">Folder ${i}</span>
+                    <span class="image-count">0 images</span>
+                </div>
+                <div class="folder-actions">
+                    <button onclick="downloadFolder(${i})" class="btn btn-sm btn-primary">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="emptyFolder(${i})" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
         `;
         folderList.appendChild(folderCol);
     }
+    
+    // Update stats periodically
+    updateFolderStats();
+    setInterval(updateFolderStats, 5000);
     let currentImages = [];
     let currentIndex = 0;
     

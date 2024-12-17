@@ -79,5 +79,76 @@ def move_file(filename, folder):
         logging.error(f"Error moving file: {str(e)}")
         return jsonify({'error': 'Failed to move file'}), 500
 
+@app.route('/folder-stats')
+def get_folder_stats():
+    stats = {}
+    folders = [str(i) for i in range(1, 10)]
+    
+    for folder in folders:
+        folder_path = os.path.join(UPLOAD_FOLDER, folder)
+        if os.path.exists(folder_path):
+            images = [f for f in os.listdir(folder_path) 
+                     if os.path.isfile(os.path.join(folder_path, f)) and 
+                     allowed_file(f)]
+            stats[folder] = len(images)
+    
+    return jsonify(stats)
+
+@app.route('/download-folder/<folder>')
+def download_folder(folder):
+    if not folder.isdigit() or not (1 <= int(folder) <= 9):
+        return jsonify({'error': 'Invalid folder'}), 400
+    
+    folder_path = os.path.join(UPLOAD_FOLDER, folder)
+    if not os.path.exists(folder_path):
+        return jsonify({'error': 'Folder not found'}), 404
+    
+    # Create a temporary zip file
+    import tempfile
+    import zipfile
+    
+    temp_dir = tempfile.mkdtemp()
+    zip_path = os.path.join(temp_dir, f'folder_{folder}.zip')
+    
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                if allowed_file(file):
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.basename(file_path)
+                    zipf.write(file_path, arcname)
+    
+    return send_from_directory(temp_dir, f'folder_{folder}.zip', as_attachment=True)
+
+# Create archive folder if it doesn't exist
+ARCHIVE_FOLDER = os.path.join(UPLOAD_FOLDER, 'archive')
+if not os.path.exists(ARCHIVE_FOLDER):
+    os.makedirs(ARCHIVE_FOLDER)
+
+@app.route('/empty-folder/<folder>')
+def empty_folder(folder):
+    if not folder.isdigit() or not (1 <= int(folder) <= 9):
+        return jsonify({'error': 'Invalid folder'}), 400
+    
+    source_folder = os.path.join(UPLOAD_FOLDER, folder)
+    if not os.path.exists(source_folder):
+        return jsonify({'error': 'Folder not found'}), 404
+    
+    try:
+        # Move all files to archive folder
+        for filename in os.listdir(source_folder):
+            if os.path.isfile(os.path.join(source_folder, filename)) and allowed_file(filename):
+                source = os.path.join(source_folder, filename)
+                # Add timestamp to prevent filename conflicts
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                archive_filename = f'{timestamp}_{filename}'
+                destination = os.path.join(ARCHIVE_FOLDER, archive_filename)
+                shutil.move(source, destination)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        logging.error(f"Error emptying folder: {str(e)}")
+        return jsonify({'error': 'Failed to empty folder'}), 500
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
