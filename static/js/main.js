@@ -50,6 +50,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Add unsorted folder first
+    const unsortedCol = document.createElement('div');
+    unsortedCol.className = 'col-12 mb-3';
+    unsortedCol.innerHTML = `
+        <div class="folder-item folder-item-unsorted" id="folder-unsorted">
+            <span class="key"><i class="fas fa-inbox"></i></span>
+            <div class="folder-info">
+                <span class="folder-name">Unsorted Images</span>
+                <span class="image-count" id="unsortedCountBadge">0 images</span>
+            </div>
+            <div class="folder-actions">
+                <button class="btn btn-sm btn-success browse-btn" data-folder="unsorted">
+                    <i class="fas fa-folder-open"></i> Browse
+                </button>
+            </div>
+        </div>
+    `;
+    folderList.appendChild(unsortedCol);
+
+    // Add numbered folders
     for (let i = 1; i <= 9; i++) {
         const folderCol = document.createElement('div');
         folderCol.className = 'col-md-4 mb-3';
@@ -61,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="image-count">0 images</span>
                 </div>
                 <div class="folder-actions">
+                    <button class="btn btn-sm btn-success browse-btn" data-folder="${i}">
+                        <i class="fas fa-folder-open"></i> Browse
+                    </button>
                     <button class="btn btn-sm btn-primary download-btn" data-folder="${i}">
                         <i class="fas fa-download"></i>
                     </button>
@@ -77,6 +100,29 @@ document.addEventListener('DOMContentLoaded', function() {
     window.downloadFolder = downloadFolder;
     window.emptyFolder = emptyFolder;
 
+    let currentFolder = 'unsorted';
+
+    async function loadFolderImages(folder) {
+        try {
+            const response = await fetch(`/images/${folder}`);
+            const data = await response.json();
+            currentImages = data.images;
+            currentIndex = 0;
+            updateImageDisplay();
+            
+            // Update active folder styling
+            document.querySelectorAll('.folder-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(`folder-${folder}`).classList.add('active');
+            
+            currentFolder = folder;
+        } catch (error) {
+            console.error('Error loading folder images:', error);
+            showToast('Failed to load folder images', 'error');
+        }
+    }
+
     // Add click handlers for folder buttons
     document.addEventListener('click', function(e) {
         if (e.target.closest('.download-btn')) {
@@ -85,6 +131,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (e.target.closest('.empty-btn')) {
             const folder = e.target.closest('.empty-btn').dataset.folder;
             emptyFolder(folder);
+        } else if (e.target.closest('.browse-btn')) {
+            const folder = e.target.closest('.browse-btn').dataset.folder;
+            loadFolderImages(folder);
         }
     });
 

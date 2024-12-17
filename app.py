@@ -52,11 +52,17 @@ def upload_file():
     
     return jsonify({'error': 'Invalid file type'}), 400
 
-@app.route('/images/unsorted')
-def get_unsorted_images():
-    unsorted_path = os.path.join(UPLOAD_FOLDER, 'unsorted')
-    images = [f for f in os.listdir(unsorted_path) 
-             if os.path.isfile(os.path.join(unsorted_path, f)) and 
+@app.route('/images/<folder>')
+def get_folder_images(folder):
+    if folder != 'unsorted' and (not folder.isdigit() or not (1 <= int(folder) <= 9)):
+        return jsonify({'error': 'Invalid folder'}), 400
+    
+    folder_path = os.path.join(UPLOAD_FOLDER, folder)
+    if not os.path.exists(folder_path):
+        return jsonify({'error': 'Folder not found'}), 404
+        
+    images = [f for f in os.listdir(folder_path) 
+             if os.path.isfile(os.path.join(folder_path, f)) and 
              allowed_file(f)]
     return jsonify({'images': images})
 

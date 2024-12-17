@@ -132,6 +132,16 @@ body {
     background-color: #e9ecef;
 }
 
+.folder-item-unsorted {
+    background-color: #f0f8ff;
+    border-left: 4px solid var(--primary-color);
+}
+
+.folder-item.active {
+    background-color: #e3f2fd;
+    border: 1px solid var(--primary-color);
+}
+
 .folder-item .key {
     background-color: var(--secondary-color);
     color: white;
