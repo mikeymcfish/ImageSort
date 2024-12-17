@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="folder-actions">
                 <button class="btn btn-sm btn-success browse-btn" data-folder="unsorted">
-                    <i class="fas fa-folder-open"></i> Browse
+                    <i class="fas fa-folder-open"></i>
                 </button>
             </div>
         </div>
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="folder-actions">
                     <button class="btn btn-sm btn-success browse-btn" data-folder="${i}">
-                        <i class="fas fa-folder-open"></i> Browse
+                        <i class="fas fa-folder-open"></i>
                     </button>
                     <button class="btn btn-sm btn-primary download-btn" data-folder="${i}">
                         <i class="fas fa-download"></i>
@@ -108,15 +108,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             currentImages = data.images;
             currentIndex = 0;
+            currentFolder = folder;
             updateImageDisplay();
             
             // Update active folder styling
             document.querySelectorAll('.folder-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.getElementById(`folder-${folder}`).classList.add('active');
-            
-            currentFolder = folder;
+            const folderId = folder === 'unsorted' ? 'folder-unsorted' : `folder-${folder}`;
+            document.getElementById(folderId).classList.add('active');
         } catch (error) {
             console.error('Error loading folder images:', error);
             showToast('Failed to load folder images', 'error');
@@ -142,7 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/images/unsorted');
             const data = await response.json();
-            document.getElementById('unsortedCount').textContent = data.images.length;
+            const count = data.images.length;
+            document.getElementById('unsortedCount').textContent = count;
+            document.getElementById('unsortedCountBadge').textContent = `${count} images`;
         } catch (error) {
             console.error('Error updating unsorted count:', error);
         }
@@ -306,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             preloadImage(currentIndex + 1);
             preloadImage(currentIndex - 1);
         };
-        tempImage.src = `/uploads/unsorted/${currentImages[currentIndex]}`;
+        tempImage.src = `/uploads/${currentFolder}/${currentImages[currentIndex]}`;
         
         // Update navigation buttons
         prevButton.disabled = currentIndex === 0;
