@@ -70,13 +70,21 @@ def get_folder_images(folder):
 def uploaded_file(folder, filename):
     return send_from_directory(os.path.join(UPLOAD_FOLDER, folder), filename)
 
-@app.route('/move/<filename>/<folder>')
-def move_file(filename, folder):
-    if not folder.isdigit() or not (1 <= int(folder) <= 9):
-        return jsonify({'error': 'Invalid folder'}), 400
+@app.route('/move/<filename>/<source_folder>/<dest_folder>')
+def move_file(filename, source_folder, dest_folder):
+    # Validate source folder
+    if source_folder != 'unsorted' and (not source_folder.isdigit() or not (1 <= int(source_folder) <= 9)):
+        return jsonify({'error': 'Invalid source folder'}), 400
     
-    source = os.path.join(UPLOAD_FOLDER, 'unsorted', filename)
-    destination = os.path.join(UPLOAD_FOLDER, folder, filename)
+    # Validate destination folder
+    if dest_folder != 'unsorted' and (not dest_folder.isdigit() or not (1 <= int(dest_folder) <= 9)):
+        return jsonify({'error': 'Invalid destination folder'}), 400
+    
+    source = os.path.join(UPLOAD_FOLDER, source_folder, filename)
+    destination = os.path.join(UPLOAD_FOLDER, dest_folder, filename)
+    
+    if not os.path.exists(source):
+        return jsonify({'error': 'Source file not found'}), 404
     
     try:
         shutil.move(source, destination)

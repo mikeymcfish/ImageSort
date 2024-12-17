@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (/^[1-9]$/.test(key) && currentImages.length > 0) {
             try {
                 const response = await fetch(
-                    `/move/${currentImages[currentIndex]}/${key}`
+                    `/move/${currentImages[currentIndex]}/${currentFolder}/${key}`
                 );
                 const data = await response.json();
                 
