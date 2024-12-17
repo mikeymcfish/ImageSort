@@ -382,4 +382,56 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundColor: type === 'success' ? "#28a745" : "#dc3545",
         }).showToast();
     }
+
+    // Google Drive Integration
+    async function checkGoogleAuth() {
+        try {
+            const response = await fetch('/google/folders');
+            if (response.status === 200) {
+                const data = await response.json();
+                showDriveFolderModal(data.folders);
+            }
+        } catch (error) {
+            console.error('Error checking Google auth:', error);
+        }
+    }
+
+    function showDriveFolderModal(folders) {
+        const modal = new bootstrap.Modal(document.getElementById('driveFolderModal'));
+        const folderList = document.getElementById('folderList');
+        
+        folderList.innerHTML = folders.map(folder => `
+            <button class="list-group-item list-group-item-action" onclick="importDriveFolder('${folder.id}')">
+                <i class="fas fa-folder me-2"></i>${folder.name}
+            </button>
+        `).join('');
+        
+        modal.show();
+    }
+
+    async function importDriveFolder(folderId) {
+        try {
+            const response = await fetch(`/google/import/${folderId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`Imported ${data.files.length} images from Google Drive`, 'success');
+                await loadImages();
+                bootstrap.Modal.getInstance(document.getElementById('driveFolderModal')).hide();
+            } else {
+                showToast(data.error || 'Import failed', 'error');
+            }
+        } catch (error) {
+            console.error('Error importing folder:', error);
+            showToast('Failed to import folder', 'error');
+        }
+    }
+
+    // Check for Google Drive authentication after OAuth callback
+    if (window.location.pathname === '/') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('state')) {
+            checkGoogleAuth();
+        }
+    }
 });
